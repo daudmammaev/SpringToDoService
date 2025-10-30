@@ -2,30 +2,18 @@ package mappers;
 
 import com.emobile.springtodo.dto.DtoToDo;
 import com.emobile.springtodo.models.ToDo;
-import org.springframework.jdbc.core.RowMapper;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
-public class ToDoMapper implements RowMapper<ToDo> {
+@Mapper(componentModel = "spring")
+public interface ToDoMapper {
 
-    @Override
-    public ToDo mapRow(ResultSet rs, int rowNum) throws SQLException {
-        ToDo toDo = new ToDo();
-        toDo.setId(rs.getInt("id"));
-        toDo.setText(rs.getString("text"));
-        return toDo;
-    }
-    public static DtoToDo ToDoByDtodoto(ToDo toDo) {
-        DtoToDo dto = new DtoToDo();
-        dto.setId(toDo.getId());
-        dto.setText(toDo.getText());
-        return dto;
-    }
-    public static ToDo DtodotoByTodo(DtoToDo dto) {
-        ToDo toDo = new ToDo();
-        toDo.setId(dto.getId());
-        toDo.setText(dto.getText());
-        return toDo;
-    }
+    ToDoMapper INSTANCE = Mappers.getMapper(ToDoMapper.class);
+
+    DtoToDo toDoToDto(ToDo toDo);
+
+    ToDo dtoToToDo(DtoToDo dto);
+
 }
