@@ -2,8 +2,10 @@ package com.emobile.springtodo.services;
 
 import com.emobile.springtodo.dto.DtoToDo;
 import com.emobile.springtodo.models.ToDo;
-import mappers.ToDoMapRow;
-import mappers.ToDoMapper;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import com.emobile.springtodo.mappers.ToDoMapRow;
+import com.emobile.springtodo.mappers.ToDoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -14,8 +16,14 @@ import java.util.List;
 @Service
 public class ToDoServicesImpl implements ToDoServices{
 
+    private final Counter orderCounter;
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public ToDoServicesImpl(MeterRegistry meterRegistry) {
+        this.orderCounter = meterRegistry.counter("orders");
+    }
 
 
     @Override
@@ -24,6 +32,9 @@ public class ToDoServicesImpl implements ToDoServices{
         jdbcTemplate.update("insert into to_do (id, text) values(?,?)",
                 toDo.getId(),
                 toDo.getText());
+
+        orderCounter.increment();
+
         return dtoToDo;
     }
 

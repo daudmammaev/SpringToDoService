@@ -2,7 +2,7 @@ package com.emobile.springtodo.mapstructTest;
 
 import com.emobile.springtodo.dto.DtoToDo;
 import com.emobile.springtodo.models.ToDo;
-import mappers.ToDoMapper;
+import com.emobile.springtodo.mappers.ToDoMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
