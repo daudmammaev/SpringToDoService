@@ -1,0 +1,5 @@
+INSERT INTO to_do (id, text) VALUES (1,'Service Test Task 1')
+INSERT INTO to_do (id, text) VALUES (2,'Service Test Task 2')
+INSERT INTO to_do (id, text) VALUES (3,'Service Test Task 3')
+INSERT INTO to_do (id, text) VALUES (4,'Service Test Task 4')
+INSERT INTO to_do (id, text) VALUES (5,'Service Test Task 5')

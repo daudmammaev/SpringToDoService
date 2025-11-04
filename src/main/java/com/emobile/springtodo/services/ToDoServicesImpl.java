@@ -2,6 +2,7 @@ package com.emobile.springtodo.services;
 
 import com.emobile.springtodo.dto.DtoToDo;
 import com.emobile.springtodo.models.ToDo;
+import com.emobile.springtodo.paginations.PaginatedResponse;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import com.emobile.springtodo.mappers.ToDoMapRow;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ToDoServicesImpl implements ToDoServices{
@@ -19,12 +21,15 @@ public class ToDoServicesImpl implements ToDoServices{
     private final Counter orderCounter;
 
     @Autowired
+    private final ToDoMapRow toDoMapRow;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public ToDoServicesImpl(MeterRegistry meterRegistry) {
+    public ToDoServicesImpl(MeterRegistry meterRegistry, ToDoMapRow toDoMapRow) {
         this.orderCounter = meterRegistry.counter("orders");
+        this.toDoMapRow = toDoMapRow;
     }
-
 
     @Override
     public DtoToDo addItem(DtoToDo dtoToDo) {
@@ -39,26 +44,45 @@ public class ToDoServicesImpl implements ToDoServices{
     }
 
     @Override
+    public List<DtoToDo> allItem() {
+        List<DtoToDo> dtoToDoList = new ArrayList<>();
+        List<ToDo> ToDoList = jdbcTemplate.query(("select * from to_do"), new ToDoMapRow());
+        ToDoList.forEach(e -> dtoToDoList.add(ToDoMapper.INSTANCE.toDoToDto(e)));
+        return dtoToDoList;
+    }
+
+    @Override
+    public PaginatedResponse<DtoToDo> allItemWithPagination(int limit, int offset) {
+        String sql = """
+        SELECT id, text
+        FROM to_do 
+        ORDER BY id  
+        LIMIT ? OFFSET ?
+        """;
+        List<ToDo> todos = jdbcTemplate.query(sql, toDoMapRow, limit, offset);
+        long total = allItem().size();
+
+        List<DtoToDo> dtoTodos = todos.stream()
+                .map(ToDoMapper.INSTANCE::toDoToDto)
+                .collect(Collectors.toList());
+
+        return PaginatedResponse.of(dtoTodos, limit, offset, total);
+    }
+
+    @Override
     public long deleteItem(long id) {
-        return 0;
+        return jdbcTemplate.update("delete from to_do where id = ?", id);
     }
 
     @Override
     public DtoToDo updateItem(DtoToDo dtoToDo) {
-        return null;
+        jdbcTemplate.update("update into to_do where id = ?", dtoToDo.getId());
+        return dtoToDo;
     }
 
     @Override
     public DtoToDo getItem(long id) {
         return ToDoMapper.INSTANCE.toDoToDto(jdbcTemplate.queryForObject(
                 "select * from to_do where id = ?", new ToDoMapRow(), id));
-    }
-
-    @Override
-    public List<DtoToDo> allItem() {
-        List<DtoToDo> dtoToDoList = new ArrayList<>();
-        List<ToDo> ToDoList = jdbcTemplate.query(("select * from to_do"), new ToDoMapRow());
-        ToDoList.forEach(e -> dtoToDoList.add(ToDoMapper.INSTANCE.toDoToDto(e)));
-        return dtoToDoList;
     }
 }
