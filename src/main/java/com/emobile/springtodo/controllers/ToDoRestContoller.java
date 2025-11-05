@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +41,7 @@ public class ToDoRestContoller {
             )
     })
     @RequestMapping("/getAll")
-    public List<DtoToDo> getAllItem() {
+    public List<DtoToDo> getAllItemWithPaginations() {
         return toDoServices.allItem();
     }
 
@@ -61,8 +62,8 @@ public class ToDoRestContoller {
             )
     })
     @RequestMapping("/getAllWithPaginatuion/{limit}/{offset}")
-    public PaginatedResponse<DtoToDo> getAllItem(@PathVariable int limit,
-                                                 @PathVariable int offset) {
+    public PaginatedResponse<DtoToDo> getAllItemWithPaginations(@PathVariable int limit,
+                                                                @PathVariable int offset) {
         return toDoServices.allItemWithPagination(limit,offset);
     }
 
@@ -112,4 +113,48 @@ public class ToDoRestContoller {
         return toDoServices.addItem(dtoToDo);
     }
 
+    @Operation(
+            summary = "Обновить задачу",
+            description = "Обновляет существующую задачу"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Задача успешно обновлена",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DtoToDo.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Невалидные данные задачи"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Задача не найдена"
+            )
+    })
+    @RequestMapping(value = "/updateItem")
+    public DtoToDo updateItem(@RequestBody @Valid DtoToDo dtoToDo) {
+        return toDoServices.updateItem(dtoToDo);
+    }
+
+    @Operation(
+            summary = "Удалить задачу",
+            description = "Удаляет задачу по её идентификатору"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Задача успешно удалена"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Задача не найдена"
+            )
+    })
+    @RequestMapping(value = "/deleteItem/{id}")
+    public ResponseEntity<String> deleteItem(@PathVariable long id) {
+        toDoServices.deleteItem(id);
+        return ResponseEntity.ok("Задача успешно удалена");
+    }
 }

@@ -1,0 +1,1 @@
+INSERT INTO to_do (id, text) VALUES (10, 'Одиночная тестовая задача');

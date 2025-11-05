@@ -1,6 +1,7 @@
 package com.emobile.springtodo.services;
 
 import com.emobile.springtodo.dto.DtoToDo;
+import com.emobile.springtodo.exceptions.ToDoNotFoundException;
 import com.emobile.springtodo.models.ToDo;
 import com.emobile.springtodo.paginations.PaginatedResponse;
 import io.micrometer.core.instrument.Counter;
@@ -52,6 +53,16 @@ public class ToDoServicesImpl implements ToDoServices{
     }
 
     @Override
+    public PaginatedResponse<DtoToDo> searchItems(String searchText, int limit, int offset) {
+
+        List<DtoToDo> dtoTodos = jdbcTemplate.query(("select * from to_do where text = ?"), new ToDoMapRow(), searchText)
+                .stream()
+                .map(ToDoMapper.INSTANCE::toDoToDto)
+                .collect(Collectors.toList());
+        return PaginatedResponse.of(dtoTodos, limit, offset, dtoTodos.size());
+    }
+
+    @Override
     public PaginatedResponse<DtoToDo> allItemWithPagination(int limit, int offset) {
         String sql = """
         SELECT id, text
@@ -71,18 +82,45 @@ public class ToDoServicesImpl implements ToDoServices{
 
     @Override
     public long deleteItem(long id) {
-        return jdbcTemplate.update("delete from to_do where id = ?", id);
+        int deletedRows = jdbcTemplate.update("delete from to_do where id = ?", id);
+
+        if (deletedRows == 0) {
+            throw new ToDoNotFoundException(id);
+        }
+
+        return deletedRows;
     }
 
     @Override
     public DtoToDo updateItem(DtoToDo dtoToDo) {
-        jdbcTemplate.update("update into to_do where id = ?", dtoToDo.getId());
+        int updatedRows = jdbcTemplate.update(
+                "UPDATE to_do SET text = ? WHERE id = ?",
+                dtoToDo.getText(),
+                dtoToDo.getId()
+        );
+
+        if (updatedRows == 0) {
+            throw new ToDoNotFoundException(dtoToDo.getId());
+        }
+
         return dtoToDo;
     }
 
     @Override
     public DtoToDo getItem(long id) {
-        return ToDoMapper.INSTANCE.toDoToDto(jdbcTemplate.queryForObject(
-                "select * from to_do where id = ?", new ToDoMapRow(), id));
+        try {
+            ToDo toDo = jdbcTemplate.queryForObject(
+                    "select * from to_do where id = ?",
+                    new ToDoMapRow(),
+                    id
+            );
+            return ToDoMapper.INSTANCE.toDoToDto(toDo);
+        } catch (org.springframework.dao.EmptyResultDataAccessException ex) {
+            throw new ToDoNotFoundException(id);
+        }
+    }
+    @Override
+    public void clearAllCaches() {
+        // Аннотация @CacheEvict выполнит очистку через AOP
     }
 }
