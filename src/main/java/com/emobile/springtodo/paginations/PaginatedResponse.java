@@ -1,12 +1,13 @@
 package com.emobile.springtodo.paginations;
 
 import com.emobile.springtodo.dto.DtoToDo;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@RequiredArgsConstructor
 @AllArgsConstructor
 public class PaginatedResponse<T> {
     private List<T> data;

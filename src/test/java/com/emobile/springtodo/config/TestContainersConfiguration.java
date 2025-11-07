@@ -20,7 +20,6 @@ public class TestContainersConfiguration {
                 .withPassword("test");
         POSTGRESQL_CONTAINER.start();
 
-        // Устанавливаем системные свойства для Spring Boot
         System.setProperty("spring.datasource.url", POSTGRESQL_CONTAINER.getJdbcUrl());
         System.setProperty("spring.datasource.username", POSTGRESQL_CONTAINER.getUsername());
         System.setProperty("spring.datasource.password", POSTGRESQL_CONTAINER.getPassword());

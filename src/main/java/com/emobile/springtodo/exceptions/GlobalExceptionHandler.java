@@ -16,7 +16,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ToDoNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleToDoNotFoundException(ToDoNotFoundException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleToDoNotFoundException(ToDoNotFoundException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
                 "Задача не найдена",
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Неверные параметры запроса",
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Внутренняя ошибка сервера",
@@ -67,8 +67,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(org.springframework.dao.EmptyResultDataAccessException.class)
-    public ResponseEntity<ErrorResponse> handleEmptyResultDataAccessException(
-            org.springframework.dao.EmptyResultDataAccessException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleEmptyResultDataAccessException() {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
                 "Ресурс не найден",

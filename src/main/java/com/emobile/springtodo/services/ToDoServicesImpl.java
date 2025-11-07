@@ -121,6 +121,5 @@ public class ToDoServicesImpl implements ToDoServices{
     }
     @Override
     public void clearAllCaches() {
-        // Аннотация @CacheEvict выполнит очистку через AOP
     }
 }

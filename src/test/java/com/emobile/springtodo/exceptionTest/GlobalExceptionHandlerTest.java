@@ -16,7 +16,6 @@ import static org.mockito.Mockito.mock;
 class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
-    private final WebRequest webRequest = mock(WebRequest.class);
 
     @Test
     @DisplayName("Обработка ToDoNotFoundException - должен вернуть 404")
@@ -25,7 +24,7 @@ class GlobalExceptionHandlerTest {
         long taskId = 1L;
         ToDoNotFoundException exception = new ToDoNotFoundException(taskId);
 
-        ResponseEntity<ErrorResponse> response = exceptionHandler.handleToDoNotFoundException(exception, webRequest);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleToDoNotFoundException(exception);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -40,7 +39,7 @@ class GlobalExceptionHandlerTest {
 
         Exception exception = new RuntimeException("Test error");
 
-        ResponseEntity<ErrorResponse> response = exceptionHandler.handleGlobalException(exception, webRequest);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleGlobalException(exception);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -55,7 +54,7 @@ class GlobalExceptionHandlerTest {
 
         IllegalArgumentException exception = new IllegalArgumentException("Invalid parameter");
 
-        ResponseEntity<ErrorResponse> response = exceptionHandler.handleIllegalArgumentException(exception, webRequest);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleIllegalArgumentException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());

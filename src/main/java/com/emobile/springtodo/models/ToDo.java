@@ -6,9 +6,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
+@RequiredArgsConstructor
 @Entity
 public class ToDo {
     @Id
@@ -20,5 +24,4 @@ public class ToDo {
     @Size(min = 1, max = 500, message = "Текст задачи должен содержать от 1 до 500 символов")
     private String text;
 
-    //private boolean done;
 }

@@ -41,7 +41,6 @@ class ToDoServicesImplUnitTest {
         meterRegistry = new SimpleMeterRegistry();
         toDoServices = new ToDoServicesImpl(meterRegistry, toDoMapRow);
 
-        // Устанавливаем мок JdbcTemplate через reflection
         var jdbcTemplateField = Arrays.stream(ToDoServicesImpl.class.getDeclaredFields())
                 .filter(field -> field.getType().equals(JdbcTemplate.class))
                 .findFirst()

@@ -15,7 +15,6 @@ public class CacheConfig extends CachingConfigurerSupport {
     public static final String TODO_CACHE = "todo";
     public static final String TODOS_PAGINATED_CACHE = "todos_paginated";
 
-    // Ключи для кэша
     public static final String ALL_TODOS_KEY = "'all_todos'";
     public static final String TODO_BY_ID_KEY = "'todo_' + #id";
     public static final String PAGINATED_TODOS_KEY = "'todos_paginated_' + #limit + '_' + #offset";

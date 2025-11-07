@@ -1,12 +1,11 @@
 package com.emobile.springtodo.paginations;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 
-@Data
+@Getter
+@Setter
+@RequiredArgsConstructor
 public class PaginationMeta {
     private int limit;
     private int offset;

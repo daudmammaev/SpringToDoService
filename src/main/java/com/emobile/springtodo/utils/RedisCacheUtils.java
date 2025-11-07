@@ -132,7 +132,6 @@ public class RedisCacheUtils {
             this.estimatedMemory = caches.stream().mapToLong(RedisCacheInfo::getEstimatedMemory).sum();
         }
 
-        // Геттеры
         public List<RedisCacheInfo> getCaches() { return caches; }
         public long getTotalKeys() { return totalKeys; }
         public long getEstimatedMemory() { return estimatedMemory; }
@@ -149,7 +148,6 @@ public class RedisCacheUtils {
             this.estimatedMemory = estimatedMemory;
         }
 
-        // Геттеры
         public String getPattern() { return pattern; }
         public long getKeyCount() { return keyCount; }
         public long getEstimatedMemory() { return estimatedMemory; }
@@ -166,7 +164,6 @@ public class RedisCacheUtils {
             this.ttl = ttl;
         }
 
-        // Геттеры
         public String getKey() { return key; }
         public Object getValue() { return value; }
         public Long getTtl() { return ttl; }
@@ -183,7 +180,6 @@ public class RedisCacheUtils {
             this.mode = mode;
         }
 
-        // Геттеры
         public String getHost() { return host; }
         public int getPort() { return port; }
         public String getMode() { return mode; }

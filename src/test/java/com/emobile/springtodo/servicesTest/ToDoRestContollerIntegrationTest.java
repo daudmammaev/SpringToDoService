@@ -58,7 +58,7 @@ class ToDoRestContollerIntegrationTest {
     @Test
     @DisplayName("Создание новой задачи - должен успешно создать задачу")
     void addItem_WhenValidData_ShouldCreateItem() throws Exception {
-        // Arrange
+
         DtoToDo newTask = new DtoToDo();
         newTask.setText("Новая задача для тестирования");
 
@@ -80,7 +80,7 @@ class ToDoRestContollerIntegrationTest {
     @DisplayName("Получение задачи по ID - должен вернуть задачу")
     @Sql(scripts = "/sql/insert-single-task.sql")
     void getItem_WhenItemExists_ShouldReturnItem() throws Exception {
-        // Arrange
+
         DtoToDo request = new DtoToDo();
         request.setId(10L);
 
@@ -98,7 +98,7 @@ class ToDoRestContollerIntegrationTest {
     @Test
     @DisplayName("Получение задачи по ID - несуществующий ID, должен вернуть 404")
     void getItem_WhenItemNotExists_ShouldReturn404() throws Exception {
-        // Arrange
+
         DtoToDo request = new DtoToDo();
         request.setId(999L);
 
@@ -121,7 +121,7 @@ class ToDoRestContollerIntegrationTest {
     @DisplayName("Обновление задачи - должен успешно обновить задачу")
     @Sql(scripts = "/sql/insert-single-task.sql")
     void updateItem_WhenItemExists_ShouldUpdateItem() throws Exception {
-        // Arrange
+
         DtoToDo updateRequest = new DtoToDo();
         updateRequest.setId(10L);
         updateRequest.setText("Обновленный текст задачи");

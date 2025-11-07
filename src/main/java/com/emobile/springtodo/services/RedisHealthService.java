@@ -46,8 +46,6 @@ public class RedisHealthService {
         try {
             RedisCacheUtils.RedisCacheStats statsBefore = redisCacheUtils.getCacheStats();
 
-            // Можно добавить логику для очистки специфичных кэшей
-
             RedisCacheUtils.RedisCacheStats statsAfter = redisCacheUtils.getCacheStats();
             logger.info("Cache cleanup completed - Before: {} keys, After: {} keys",
                     statsBefore.getTotalKeys(), statsAfter.getTotalKeys());
@@ -89,7 +87,6 @@ public class RedisHealthService {
             this.estimatedMemory = estimatedMemory;
         }
 
-        // Геттеры
         public String getStatus() { return status; }
         public String getPing() { return ping; }
         public long getTotalKeys() { return totalKeys; }

@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - preConditions:
+      - runningAs:
+          username: postgres
+      - dbms:
+          type: postgresql
+      - changeLogPropertyDefined:
+          property: environment
+          value: kubernetes
+
+  - changeSet:
+      id: 001-basic-preconditions
+      author: dev-team
+      changes:
+        - createTable:
+            tableName: to_do
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
