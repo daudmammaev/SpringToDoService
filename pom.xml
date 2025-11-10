@@ -18,6 +18,16 @@
         <java.version>21</java.version>
         <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+
+        <checkstyle.version>3.2.1</checkstyle.version>
+        <spotbugs.version>4.7.3</spotbugs.version>
+        <jacoco.version>0.8.8</jacoco.version>
+        <owasp.dependency.check.version>7.4.1</owasp.dependency.check.version>
+
+        <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
+        <spotbugs.failOnError>true</spotbugs.failOnError>
+        <jacoco.min.line.coverage>0.8</jacoco.min.line.coverage>
+        <jacoco.min.branch.coverage>0.7</jacoco.min.branch.coverage>
     </properties>
 
     <dependencies>
@@ -133,14 +143,54 @@
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.version}</version>
+                <configuration>
+                    <configLocation>google_checks.xml</configLocation>
+                    <failOnViolation>${checkstyle.failOnViolation}</failOnViolation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                </configuration>
+        </plugin>
+    <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+    <configuration>
+        <rules>
+            <rule>
+                <element>BUNDLE</element>
+                <limits>
+                    <limit>
+                        <counter>LINE</counter>
+                        <value>COVEREDRATIO</value>
+                        <minimum>${jacoco.min.line.coverage}</minimum>
+                    </limit>
+                    <limit>
+                        <counter>BRANCH</counter>
+                        <value>COVEREDRATIO</value>
+                        <minimum>${jacoco.min.branch.coverage}</minimum>
+                    </limit>
+                </limits>
+            </rule>
+        </rules>
+    </configuration>
+        </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${owasp.dependency.check.version}</version>
+                    <configuration>
+                        <format>HTML</format>
+                        <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+            </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

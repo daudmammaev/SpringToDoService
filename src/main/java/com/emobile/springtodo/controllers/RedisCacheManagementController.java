@@ -4,6 +4,7 @@ import com.emobile.springtodo.services.ToDoServices;
 import com.emobile.springtodo.utils.RedisCacheUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisCacheManagementController {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisCacheManagementController.class);
-
+    @Autowired
     private final RedisCacheUtils redisCacheUtils;
     private final ToDoServices toDoService;
 

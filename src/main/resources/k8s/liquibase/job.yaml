@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: liquibase-migration
+  namespace: todo-app
+spec:
+  template:
+    metadata:
+      name: liquibase-migration
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z postgres-service.todo-app.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done;']
+      containers:
+        - name: liquibase
+          image: liquibase/liquibase:4.20
+          command:
+            - /bin/sh
+            - -c
+            - |
+              liquibase \
+                --changelog-file=db/changelog/db.changelog-master.yaml \
+                --driver=org.postgresql.Driver \
+                --url="jdbc:postgresql://postgres-service.todo-app.svc.cluster.local:5432/todo_db" \
+                --username=postgres \
+                --password=password \
+                --contexts=kubernetes \
+                update
+          env:
+            - name: LIQUIBASE_COMMAND_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: todo-app-secrets
+                  key: spring-datasource-username
+            - name: LIQUIBASE_COMMAND_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: todo-app-secrets
+                  key: spring-datasource-password
+          volumeMounts:
+            - name: changelog-volume
+              mountPath: /liquibase/changelog
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+      volumes:
+        - name: changelog-volume
+          configMap:
+            name: liquibase-changelog

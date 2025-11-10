@@ -2,6 +2,7 @@ package com.emobile.springtodo.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +16,9 @@ public class RedisCacheUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisCacheUtils.class);
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate redisTemplate;
 
-    public RedisCacheUtils(RedisTemplate<String, Object> redisTemplate) {
+    public RedisCacheUtils(RedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 

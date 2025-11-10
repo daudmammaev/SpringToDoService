@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: liquibase-changelog
+  namespace: todo-app
+data:
+  db.changelog-master.yaml: |
+    databaseChangeLog:
+      - includeAll:
+          path: db/changelog/001-initial-schema/
+          relativeToChangelogFile: true
+      - includeAll:
+          path: db/changelog/002-add-new-columns/
+          relativeToChangelogFile: true
+      - includeAll:
+          path: db/changelog/003-data-migrations/
+          relativeToChangelogFile: true
+
+  001-create-todo-table.yaml: |
+    databaseChangeLog:
+      - changeSet:
+          id: 001-create-todo-table
+          author: dev-team
+          changes:
+            - createTable:
+                tableName: todo
+                columns:
+                  - column:
+                      name: id
+                      type: BIGINT
+                      autoIncrement: true
+                      constraints:
+                        primaryKey: true
+                        nullable: false
+                  - column:
+                      name: text
+                      type: VARCHAR(500)
+                      constraints:
+                        nullable: false
+                  - column:
+                      name: is_completed
+                      type: BOOLEAN
+                      defaultValue: false
+                      constraints:
+                        nullable: false
+                  - column:
+                      name: created_at
+                      type: TIMESTAMP
+                      defaultValueComputed: CURRENT_TIMESTAMP
+                  - column:
+                      name: updated_at
+                      type: TIMESTAMP
+                      defaultValueComputed: CURRENT_TIMESTAMP
+            - createSequence:
+                sequenceName: todo_id_seq
+                startValue: 1
+                incrementBy: 1
