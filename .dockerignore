@@ -1,0 +1,10 @@
+.git
+.gitlab-ci.yml
+target/
+.m2/
+*.iml
+.idea/
+*.log
+.DS_Store
+
+README.md

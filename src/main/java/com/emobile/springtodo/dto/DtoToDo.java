@@ -10,7 +10,6 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class DtoToDo {
 
     @NotNull(message = "ID не может быть null")

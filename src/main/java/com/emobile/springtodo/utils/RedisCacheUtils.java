@@ -15,9 +15,9 @@ public class RedisCacheUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisCacheUtils.class);
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate redisTemplate;
 
-    public RedisCacheUtils(RedisTemplate<String, Object> redisTemplate) {
+    public RedisCacheUtils(RedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
