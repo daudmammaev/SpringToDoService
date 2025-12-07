@@ -82,8 +82,6 @@ pipeline {
     post {
         always {
             echo 'Pipeline completed.'
-            // Очистка Docker образа
-            sh 'docker rmi ${DOCKER_IMAGE}:${VERSION} || true'
         }
         success {
             echo 'Pipeline succeeded!'
