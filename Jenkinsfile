@@ -1,16 +1,95 @@
-
-echo "Starting Jenkins with Docker..."
-docker-compose up -d
-
-echo "Waiting for Jenkins to start..."
-sleep 30
-
-echo "Jenkins is running at http://localhost:8080"
-echo "Admin username: admin"
-echo "Admin password: admin123"
-
-# Инициализация Jenkins
-echo "Setting up Jenkins..."
-
-# Создание pipeline job через CLI (опционально)
-docker exec jenkins bash -c 'java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ create-job myapp-pipeline < /var/jenkins_home/jobs/pipeline-config.xml'
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_IMAGE = 'your-dockerhub-username/myapp'
+        VERSION = "${env.BUILD_NUMBER}"
+    }
+    
+    stages {
+        // Сборка проекта
+        stage('Build') {
+            steps {
+                script {
+                    echo 'Building the application...'
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+        
+        // Запуск тестов
+        stage('Test') {
+            steps {
+                script {
+                    echo 'Running tests...'
+                    sh 'mvn test'
+                }
+            }
+            
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        
+        // Сборка Docker образа
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building Docker image...'
+                    sh """
+                        docker build -t ${DOCKER_IMAGE}:${VERSION} .
+                        docker tag ${DOCKER_IMAGE}:${VERSION} ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+        
+        // Публикация в Docker Hub
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    echo 'Logging into Docker Hub...'
+                    sh "echo '${DOCKER_HUB_CREDENTIALS_PSW}' | docker login -u '${DOCKER_HUB_CREDENTIALS_USR}' --password-stdin"
+                    
+                    echo 'Pushing image to Docker Hub...'
+                    sh """
+                        docker push ${DOCKER_IMAGE}:${VERSION}
+                        docker push ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+        
+        // Деплой (опционально)
+        stage('Deploy') {
+            when {
+                branch 'master'
+            }
+            steps {
+                script {
+                    echo 'Deploying application...'
+                    // Добавьте здесь команды для деплоя
+                    // Например, для деплоя в Kubernetes:
+                    // sh 'kubectl apply -f k8s-deployment.yaml'
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Pipeline completed.'
+            // Очистка Docker образа
+            sh 'docker rmi ${DOCKER_IMAGE}:${VERSION} || true'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
