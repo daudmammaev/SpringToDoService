@@ -1,5 +1,3 @@
-#!/bin/bash
-# startup-jenkins.sh
 
 echo "Starting Jenkins with Docker..."
 docker-compose up -d
