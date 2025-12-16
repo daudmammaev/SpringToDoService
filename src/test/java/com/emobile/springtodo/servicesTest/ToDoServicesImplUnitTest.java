@@ -4,6 +4,7 @@ import com.emobile.springtodo.dto.DtoToDo;
 import com.emobile.springtodo.exceptions.ToDoNotFoundException;
 import com.emobile.springtodo.mappers.ToDoMapRow;
 import com.emobile.springtodo.models.ToDo;
+import com.emobile.springtodo.repositories.RepoToDo;
 import com.emobile.springtodo.services.ToDoServicesImpl;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -39,7 +40,7 @@ class ToDoServicesImplUnitTest {
     @BeforeEach
     void setUp() {
         meterRegistry = new SimpleMeterRegistry();
-        toDoServices = new ToDoServicesImpl(meterRegistry, toDoMapRow);
+        toDoServices = new ToDoServicesImpl(meterRegistry, (RepoToDo) toDoMapRow);
 
         var jdbcTemplateField = Arrays.stream(ToDoServicesImpl.class.getDeclaredFields())
                 .filter(field -> field.getType().equals(JdbcTemplate.class))
