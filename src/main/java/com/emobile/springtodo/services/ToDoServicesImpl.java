@@ -2,76 +2,110 @@ package com.emobile.springtodo.services;
 
 import com.emobile.springtodo.dto.DtoToDo;
 import com.emobile.springtodo.exceptions.ToDoNotFoundException;
+import com.emobile.springtodo.mappers.ToDoMapRow;
 import com.emobile.springtodo.models.ToDo;
 import com.emobile.springtodo.paginations.PaginatedResponse;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import com.emobile.springtodo.mappers.ToDoMapRow;
 import com.emobile.springtodo.mappers.ToDoMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ToDoServicesImpl implements ToDoServices{
+@Transactional
+public class ToDoServicesImpl implements ToDoServices {
 
     private final Counter orderCounter;
 
-    @Autowired
-    private final ToDoMapRow toDoMapRow;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public ToDoServicesImpl(MeterRegistry meterRegistry, ToDoMapRow toDoMapRow) {
         this.orderCounter = meterRegistry.counter("orders");
-        this.toDoMapRow = toDoMapRow;
     }
 
     @Override
     public DtoToDo addItem(DtoToDo dtoToDo) {
         ToDo toDo = ToDoMapper.INSTANCE.dtoToToDo(dtoToDo);
-        jdbcTemplate.update("insert into to_do (id, text) values(?,?)",
-                toDo.getId(),
-                toDo.getText());
+        entityManager.persist(toDo);
 
         orderCounter.increment();
 
-        return dtoToDo;
+        return ToDoMapper.INSTANCE.toDoToDto(toDo);
     }
 
     @Override
     public List<DtoToDo> allItem() {
-        List<DtoToDo> dtoToDoList = new ArrayList<>();
-        List<ToDo> ToDoList = jdbcTemplate.query(("select * from to_do"), new ToDoMapRow());
-        ToDoList.forEach(e -> dtoToDoList.add(ToDoMapper.INSTANCE.toDoToDto(e)));
-        return dtoToDoList;
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ToDo> cq = cb.createQuery(ToDo.class);
+        Root<ToDo> root = cq.from(ToDo.class);
+        cq.select(root);
+
+        List<ToDo> todos = entityManager.createQuery(cq).getResultList();
+
+        return todos.stream()
+                .map(ToDoMapper.INSTANCE::toDoToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public PaginatedResponse<DtoToDo> searchItems(String searchText, int limit, int offset) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ToDo> cq = cb.createQuery(ToDo.class);
+        Root<ToDo> root = cq.from(ToDo.class);
 
-        List<DtoToDo> dtoTodos = jdbcTemplate.query(("select * from to_do where text = ?"), new ToDoMapRow(), searchText)
-                .stream()
+        Predicate textPredicate = cb.equal(root.get("text"), searchText);
+        cq.where(textPredicate);
+
+        TypedQuery<ToDo> query = entityManager.createQuery(cq);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
+
+        List<ToDo> todos = query.getResultList();
+
+        // Получаем общее количество
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<ToDo> countRoot = countQuery.from(ToDo.class);
+        countQuery.select(cb.count(countRoot));
+        countQuery.where(cb.equal(countRoot.get("text"), searchText));
+        Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+        List<DtoToDo> dtoTodos = todos.stream()
                 .map(ToDoMapper.INSTANCE::toDoToDto)
                 .collect(Collectors.toList());
-        return PaginatedResponse.of(dtoTodos, limit, offset, dtoTodos.size());
+
+        return PaginatedResponse.of(dtoTodos, limit, offset, total);
     }
 
     @Override
     public PaginatedResponse<DtoToDo> allItemWithPagination(int limit, int offset) {
-        String sql = """
-        SELECT id, text
-        FROM to_do 
-        ORDER BY id  
-        LIMIT ? OFFSET ?
-        """;
-        List<ToDo> todos = jdbcTemplate.query(sql, toDoMapRow, limit, offset);
-        long total = allItem().size();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ToDo> cq = cb.createQuery(ToDo.class);
+        Root<ToDo> root = cq.from(ToDo.class);
+        cq.select(root);
+        cq.orderBy(cb.asc(root.get("id")));
+
+        TypedQuery<ToDo> query = entityManager.createQuery(cq);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
+
+        List<ToDo> todos = query.getResultList();
+
+        // Получаем общее количество
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<ToDo> countRoot = countQuery.from(ToDo.class);
+        countQuery.select(cb.count(countRoot));
+        Long total = entityManager.createQuery(countQuery).getSingleResult();
 
         List<DtoToDo> dtoTodos = todos.stream()
                 .map(ToDoMapper.INSTANCE::toDoToDto)
@@ -82,44 +116,40 @@ public class ToDoServicesImpl implements ToDoServices{
 
     @Override
     public long deleteItem(long id) {
-        int deletedRows = jdbcTemplate.update("delete from to_do where id = ?", id);
-
-        if (deletedRows == 0) {
+        ToDo toDo = entityManager.find(ToDo.class, id);
+        if (toDo == null) {
             throw new ToDoNotFoundException(id);
         }
 
-        return deletedRows;
+        entityManager.remove(toDo);
+        return 1;
     }
 
     @Override
     public DtoToDo updateItem(DtoToDo dtoToDo) {
-        int updatedRows = jdbcTemplate.update(
-                "UPDATE to_do SET text = ? WHERE id = ?",
-                dtoToDo.getText(),
-                dtoToDo.getId()
-        );
-
-        if (updatedRows == 0) {
+        ToDo existingToDo = entityManager.find(ToDo.class, dtoToDo.getId());
+        if (existingToDo == null) {
             throw new ToDoNotFoundException(dtoToDo.getId());
         }
 
-        return dtoToDo;
+        existingToDo.setText(dtoToDo.getText());
+        entityManager.merge(existingToDo);
+
+        return ToDoMapper.INSTANCE.toDoToDto(existingToDo);
     }
 
     @Override
     public DtoToDo getItem(long id) {
-        try {
-            ToDo toDo = jdbcTemplate.queryForObject(
-                    "select * from to_do where id = ?",
-                    new ToDoMapRow(),
-                    id
-            );
-            return ToDoMapper.INSTANCE.toDoToDto(toDo);
-        } catch (org.springframework.dao.EmptyResultDataAccessException ex) {
+        ToDo toDo = entityManager.find(ToDo.class, id);
+        if (toDo == null) {
             throw new ToDoNotFoundException(id);
         }
+
+        return ToDoMapper.INSTANCE.toDoToDto(toDo);
     }
+
     @Override
     public void clearAllCaches() {
+        entityManager.getEntityManagerFactory().getCache().evictAll();
     }
 }
