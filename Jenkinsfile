@@ -8,7 +8,6 @@ pipeline {
     }
     
     stages {
-        // Сборка проекта
         stage('Build') {
             steps {
                 script {
@@ -17,8 +16,6 @@ pipeline {
                 }
             }
         }
-        
-        // Запуск тестов
         stage('Test') {
             steps {
                 script {
@@ -33,8 +30,6 @@ pipeline {
                 }
             }
         }
-        
-        // Сборка Docker образа
         stage('Build Docker Image') {
             steps {
                 script {
@@ -46,8 +41,6 @@ pipeline {
                 }
             }
         }
-        
-        // Публикация в Docker Hub
         stage('Push to Docker Hub') {
             steps {
                 script {
@@ -62,18 +55,13 @@ pipeline {
                 }
             }
         }
-        
-        // Деплой (опционально)
         stage('Deploy') {
             when {
                 branch 'master'
             }
             steps {
                 script {
-                    echo 'Deploying application...'
-                    // Добавьте здесь команды для деплоя
-                    // Например, для деплоя в Kubernetes:
-                    // sh 'kubectl apply -f k8s-deployment.yaml'
+                    sh 'kubectl apply -f k8s-deployment.yaml'
                 }
             }
         }
